@@ -1,6 +1,6 @@
 import "./styles.css";
 import { isConfigured, loadConfig, saveConfig } from "./settings";
-import { appendProject, fetchWorkspace } from "./jsonbin";
+import { appendProject, fetchWorkspace, MOCK_BIN_ID } from "./jsonbin";
 import { readCurrentEmail, type EmailContext } from "./email";
 import {
   PRODUCT_AREAS,
@@ -136,10 +136,12 @@ async function onSettingsSave() {
     apiKey: getVal("cfg-api-key").trim(),
     accessKey: getVal("cfg-access-key").trim() || undefined,
   };
-  if (!next.binId || !next.apiKey) {
+  const mock = next.binId.toLowerCase() === MOCK_BIN_ID;
+  if (!next.binId || (!mock && !next.apiKey)) {
     showSettingsError("Bin ID and master key are required.");
     return;
   }
+  if (mock) next.apiKey = next.apiKey || "mock";
   try {
     await saveConfig(next);
     config = next;
