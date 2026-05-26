@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Design PM — Outlook</title>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="header">
+        <div class="brand">Design&nbsp;PM</div>
+        <button id="settings-btn" class="icon-btn" title="Settings" aria-label="Settings">⚙</button>
+      </header>
+
+      <main id="view-loading" class="view">
+        <p class="muted">Loading…</p>
+      </main>
+
+      <main id="view-settings" class="view hidden">
+        <h2>Storage</h2>
+        <p class="muted small">
+          Paste your JSONBin bin ID and master key. These live in this add-in's roaming
+          settings, synced per Outlook user.
+        </p>
+        <label class="field">
+          <span>Bin ID</span>
+          <input id="cfg-bin-id" autocomplete="off" />
+        </label>
+        <label class="field">
+          <span>Master key (X-Master-Key)</span>
+          <input id="cfg-api-key" type="password" autocomplete="off" />
+        </label>
+        <label class="field">
+          <span>Access key (optional)</span>
+          <input id="cfg-access-key" type="password" autocomplete="off" />
+        </label>
+        <p id="settings-error" class="error hidden"></p>
+        <div class="row-end">
+          <button id="settings-test" class="ghost">Test connection</button>
+          <button id="settings-save" class="primary">Save</button>
+        </div>
+      </main>
+
+      <main id="view-form" class="view hidden">
+        <p id="form-banner" class="banner hidden"></p>
+        <label class="field">
+          <span>Title</span>
+          <input id="f-title" />
+        </label>
+        <label class="field">
+          <span>Overview</span>
+          <textarea id="f-overview" rows="4"></textarea>
+        </label>
+        <div class="grid">
+          <label class="field">
+            <span>Owner</span>
+            <input id="f-owner" />
+          </label>
+          <label class="field">
+            <span>Client</span>
+            <input id="f-client" />
+          </label>
+          <label class="field">
+            <span>Commenced</span>
+            <input id="f-commenced" type="date" />
+          </label>
+          <label class="field">
+            <span>Due date</span>
+            <input id="f-due" type="date" />
+          </label>
+          <label class="field">
+            <span>Priority</span>
+            <select id="f-priority">
+              <option value="Urgent">Urgent</option>
+              <option value="High">High</option>
+              <option value="Normal" selected>Normal</option>
+              <option value="Low">Low</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Assignee</span>
+            <select id="f-assignee"></select>
+          </label>
+          <label class="field">
+            <span>Brand</span>
+            <input id="f-brand" list="brand-options" />
+            <datalist id="brand-options"></datalist>
+          </label>
+          <label class="field">
+            <span>Product area</span>
+            <select id="f-area"></select>
+          </label>
+          <label class="field span-2">
+            <span>Brief URL</span>
+            <input id="f-brief" placeholder="https://…" />
+          </label>
+        </div>
+        <p id="form-error" class="error hidden"></p>
+        <div class="row-end">
+          <button id="form-reset" class="ghost">Reset from email</button>
+          <button id="form-submit" class="primary">Add project</button>
+        </div>
+      </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

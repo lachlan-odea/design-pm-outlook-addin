@@ -1,0 +1,18 @@
+node_modules
+dist
+.vite
+*.log
+.env
+.env.local
+.DS_Store
+
+# Generated outputs
+manifest.dev.xml
+manifest.prod.xml
+
+# tsc emit fallback (shouldn't occur with noEmit:true, but belt and braces)
+src/**/*.js
+src/**/*.js.map
+vite.config.js
+scripts/*.js
+*.tsbuildinfo
