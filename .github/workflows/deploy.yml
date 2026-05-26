@@ -26,10 +26,12 @@ jobs:
       - run: npm ci
       - name: Compute base URL
         id: base
+        # Private-repo Pages is served from a randomised <slug>.pages.github.io
+        # host at the root path, not <owner>.github.io/<repo>/. Hardcoding both
+        # values keeps Vite asset paths and the manifest in sync with that host.
         run: |
-          REPO="${GITHUB_REPOSITORY#*/}"
-          echo "PAGES_BASE=/$REPO/" >> "$GITHUB_OUTPUT"
-          echo "BASE_URL=https://${GITHUB_REPOSITORY_OWNER}.github.io/$REPO" >> "$GITHUB_OUTPUT"
+          echo "PAGES_BASE=/" >> "$GITHUB_OUTPUT"
+          echo "BASE_URL=https://stunning-adventure-zgpqrgl.pages.github.io" >> "$GITHUB_OUTPUT"
       - name: Build site
         env:
           VITE_BASE: ${{ steps.base.outputs.PAGES_BASE }}
