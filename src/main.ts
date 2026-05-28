@@ -3,6 +3,7 @@ import { isConfigured, loadConfig, saveConfig } from "./settings";
 import { appendProject, fetchWorkspace, MOCK_BIN_ID } from "./jsonbin";
 import { readCurrentEmail, type EmailContext } from "./email";
 import {
+  BRANDS,
   PRODUCT_AREAS,
   type Designer,
   type JsonBinConfig,
@@ -53,7 +54,7 @@ async function bootForm() {
 
 function fillForm(ctx: EmailContext, ws: Workspace) {
   populateAssignees(ws.designers);
-  populateBrands(ws);
+  populateBrands();
   populateProductAreas();
 
   setVal("f-title", ctx.subject || "Untitled brief");
@@ -62,8 +63,7 @@ function fillForm(ctx: EmailContext, ws: Workspace) {
     truncate(ctx.bodyText.replace(/​/g, "").trim(), 600) ||
       "Brief sourced from email."
   );
-  setVal("f-owner", ctx.senderName || ctx.senderEmail);
-  setVal("f-client", "");
+  setVal("f-client", ctx.senderName || ctx.senderEmail);
   setVal("f-commenced", todayISO());
   setVal("f-due", ctx.detectedDueDate ?? "");
   setVal("f-priority", ctx.detectedPriority ?? "Normal");
@@ -92,16 +92,11 @@ function populateAssignees(designers: Designer[]) {
   designers.forEach((d) => sel.appendChild(option(d.id, d.name)));
 }
 
-function populateBrands(ws: Workspace) {
-  const list = el<HTMLDataListElement>("brand-options");
-  const brands = new Set<string>();
-  ws.projects.forEach((p) => p.brand && brands.add(p.brand));
-  list.innerHTML = "";
-  [...brands].sort().forEach((b) => {
-    const opt = document.createElement("option");
-    opt.value = b;
-    list.appendChild(opt);
-  });
+function populateBrands() {
+  const sel = el<HTMLSelectElement>("f-brand");
+  sel.innerHTML = "";
+  sel.appendChild(option("", "Select a brand…"));
+  BRANDS.forEach((b) => sel.appendChild(option(b, b)));
 }
 
 function populateProductAreas() {
@@ -177,7 +172,7 @@ async function onSubmit() {
     id: `p-${Date.now()}`,
     title,
     overview: getVal("f-overview").trim(),
-    owner: getVal("f-owner").trim(),
+    owner: "",
     client: getVal("f-client").trim(),
     brand: getVal("f-brand").trim(),
     productArea: getVal("f-area") === "__other__" ? "" : getVal("f-area"),

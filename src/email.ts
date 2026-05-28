@@ -24,15 +24,10 @@ export async function readCurrentEmail(): Promise<EmailContext> {
   const senderEmail = from?.emailAddress ?? "";
   const receivedISO = (item.dateTimeCreated ?? new Date()).toISOString();
 
-  const bodyText = await new Promise<string>((resolve) => {
-    item.body.getAsync(Office.CoercionType.Text, (result) => {
-      if (result.status === Office.AsyncResultStatus.Succeeded) {
-        resolve(result.value);
-      } else {
-        resolve("");
-      }
-    });
-  });
+  const htmlBody = await getBodyAs(item, Office.CoercionType.Html);
+  const bodyText = htmlBody
+    ? htmlToTextWithLinks(htmlBody)
+    : await getBodyAs(item, Office.CoercionType.Text);
 
   return {
     subject,
@@ -44,6 +39,42 @@ export async function readCurrentEmail(): Promise<EmailContext> {
     detectedPriority: detectPriority(`${subject}\n${bodyText}`),
     firstUrl: detectFirstUrl(bodyText),
   };
+}
+
+function getBodyAs(
+  item: Office.MessageRead,
+  type: Office.CoercionType
+): Promise<string> {
+  return new Promise((resolve) => {
+    item.body.getAsync(type, (result) => {
+      resolve(result.status === Office.AsyncResultStatus.Succeeded ? result.value : "");
+    });
+  });
+}
+
+// Outlook's plain-text coercion drops the href from <a> tags, leaving only the
+// link text. We need the URLs in the overview, so parse the HTML body and
+// inline each hyperlink as "text (url)" before flattening to text.
+function htmlToTextWithLinks(html: string): string {
+  if (!html) return "";
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  doc.querySelectorAll("style, script").forEach((n) => n.remove());
+  doc.querySelectorAll("a[href]").forEach((a) => {
+    const href = (a.getAttribute("href") ?? "").trim();
+    const text = (a.textContent ?? "").trim();
+    if (!href || href.startsWith("mailto:") || href.startsWith("tel:")) return;
+    if (!text || text === href) {
+      a.replaceWith(href);
+    } else {
+      a.replaceWith(`${text} (${href})`);
+    }
+  });
+  const raw = doc.body?.textContent ?? "";
+  return raw
+    .replace(/​/g, "")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 function detectPriority(text: string): Priority | null {

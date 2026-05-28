@@ -53,6 +53,14 @@ export type JsonBinConfig = {
   accessKey?: string;
 };
 
+export const BRANDS = [
+  "CargoWise",
+  "CargoWise Landside",
+  "WiseTech Global",
+  "WiseTech Academy",
+  "e2open",
+] as const;
+
 export const PRODUCT_AREAS = [
   "Web",
   "Landing page",
