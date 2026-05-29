@@ -11,6 +11,7 @@ export type EmailContext = {
   receivedISO: string;
   detectedDueDate: string | null;
   detectedPriority: Priority | null;
+  detectedBrand: string | null;
   firstUrl: string | null;
 };
 
@@ -37,8 +38,25 @@ export async function readCurrentEmail(): Promise<EmailContext> {
     receivedISO,
     detectedDueDate: detectDueDate(`${subject}\n${bodyText}`),
     detectedPriority: detectPriority(`${subject}\n${bodyText}`),
+    detectedBrand: detectBrand(`${subject}\n${bodyText}`),
     firstUrl: detectFirstUrl(bodyText),
   };
+}
+
+// Initialisations the design team uses internally for brand names. Matched
+// against the email subject + body as whole words (case-insensitive).
+const BRAND_INITIALS: { token: string; brand: string }[] = [
+  { token: "WTA", brand: "WiseTech Academy" },
+  { token: "WTG", brand: "WiseTech Global" },
+  { token: "CW", brand: "CargoWise" },
+];
+
+function detectBrand(text: string): string | null {
+  for (const { token, brand } of BRAND_INITIALS) {
+    const re = new RegExp(`(?<![A-Za-z])${token}(?![A-Za-z])`, "i");
+    if (re.test(text)) return brand;
+  }
+  return null;
 }
 
 function getBodyAs(
@@ -52,13 +70,15 @@ function getBodyAs(
   });
 }
 
-// Outlook's plain-text coercion drops the href from <a> tags, leaving only the
-// link text. We need the URLs in the overview, so parse the HTML body and
-// inline each hyperlink as "text (url)" before flattening to text.
+// Outlook's plain-text coercion drops the href from <a> tags and collapses
+// block-level whitespace, leaving paragraphs concatenated. So we parse the
+// HTML body ourselves: inline each hyperlink as "text (url)" and insert
+// newlines around block elements before flattening to text.
 function htmlToTextWithLinks(html: string): string {
   if (!html) return "";
   const doc = new DOMParser().parseFromString(html, "text/html");
   doc.querySelectorAll("style, script").forEach((n) => n.remove());
+
   doc.querySelectorAll("a[href]").forEach((a) => {
     const href = (a.getAttribute("href") ?? "").trim();
     const text = (a.textContent ?? "").trim();
@@ -69,6 +89,32 @@ function htmlToTextWithLinks(html: string): string {
       a.replaceWith(`${text} (${href})`);
     }
   });
+
+  // Hard line breaks → newline.
+  doc.querySelectorAll("br").forEach((br) => {
+    br.replaceWith(doc.createTextNode("\n"));
+  });
+
+  // List items get a bullet prefix.
+  doc.querySelectorAll("li").forEach((li) => {
+    li.insertBefore(doc.createTextNode("- "), li.firstChild);
+  });
+
+  // Block-level elements get a trailing newline so their text doesn't fuse
+  // with the next block; paragraphs and headings get an extra blank line.
+  doc
+    .querySelectorAll(
+      "li, tr, table, section, article, header, footer, ul, ol",
+    )
+    .forEach((el) => {
+      el.appendChild(doc.createTextNode("\n"));
+    });
+  doc
+    .querySelectorAll("p, div, blockquote, h1, h2, h3, h4, h5, h6")
+    .forEach((el) => {
+      el.appendChild(doc.createTextNode("\n\n"));
+    });
+
   const raw = doc.body?.textContent ?? "";
   return raw
     .replace(/​/g, "")

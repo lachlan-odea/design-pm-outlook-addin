@@ -39,6 +39,27 @@ function makeAnchor(href: string, text: string): HTMLAnchorElement {
   return a;
 }
 
+// Extract just the links from `text` — used for a compact preview that
+// confirms detected links without echoing the whole overview body.
+export function extractLinks(text: string): { href: string; label: string }[] {
+  if (!text) return [];
+  const links: { href: string; label: string }[] = [];
+  LINK_RE.lastIndex = 0;
+  for (let m = LINK_RE.exec(text); m !== null; m = LINK_RE.exec(text)) {
+    const [, mdLabel, mdUrl, httpUrl, domain] = m;
+    if (mdUrl) {
+      links.push({ href: normalizeHref(mdUrl), label: mdLabel });
+    } else {
+      let url = httpUrl || domain;
+      while (url.length > 0 && TRAILING_PUNCT.test(url)) {
+        url = url.slice(0, -1);
+      }
+      links.push({ href: normalizeHref(url), label: url });
+    }
+  }
+  return links;
+}
+
 // Replace `target`'s contents with `text` rendered so URLs and `[label](url)`
 // links appear as real <a> elements. Newlines are preserved (the target
 // should have `white-space: pre-wrap`).

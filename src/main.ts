@@ -11,7 +11,7 @@ import {
   type Project,
   type Workspace,
 } from "./types";
-import { renderLinkified } from "./linkify";
+import { extractLinks } from "./linkify";
 
 let config: JsonBinConfig = { binId: "", apiKey: "", accessKey: "" };
 let workspace: Workspace | null = null;
@@ -45,8 +45,27 @@ function updateOverviewPreview() {
   const text = getVal("f-overview");
   const preview = document.getElementById("f-overview-preview");
   if (!preview) return;
-  renderLinkified(text, preview);
-  preview.classList.toggle("empty", !text.trim());
+  const links = extractLinks(text);
+  preview.replaceChildren();
+  if (links.length === 0) {
+    preview.classList.add("empty");
+    return;
+  }
+  preview.classList.remove("empty");
+  const label = document.createElement("span");
+  label.className = "overview-links-label";
+  label.textContent = `${links.length} link${links.length === 1 ? "" : "s"} detected ·`;
+  preview.appendChild(label);
+  links.forEach((l, i) => {
+    const a = document.createElement("a");
+    a.href = l.href;
+    a.target = "_blank";
+    a.rel = "noreferrer";
+    a.textContent = l.label;
+    preview.appendChild(a);
+    if (i < links.length - 1)
+      preview.appendChild(document.createTextNode(" · "));
+  });
 }
 
 async function bootForm() {
@@ -77,7 +96,7 @@ function fillForm(ctx: EmailContext, ws: Workspace) {
   setVal("f-commenced", todayISO());
   setVal("f-due", ctx.detectedDueDate ?? "");
   setVal("f-priority", ctx.detectedPriority ?? "Normal");
-  setVal("f-brand", "");
+  setVal("f-brand", ctx.detectedBrand ?? "");
   setVal("f-area", "");
   setVal("f-brief", ctx.firstUrl ?? "");
 
