@@ -14,7 +14,7 @@ in one click. Pairs with the [Design PM React app](../project%20manangement%20to
   - **Due date** ← best-effort parse of "due by …", "deadline …", ISO dates, dd/mm/yyyy
   - **Priority** ← detects "urgent", "asap", "important", "low priority" etc.
   - **Brief URL** ← first http(s) link in the body
-  - **Assignee / Brand / Product area** ← dropdowns sourced live from the workspace bin
+  - **Assignee / Brand / Content type** ← dropdowns sourced live from the workspace bin
 - One click writes the new project into the same JSONBin that the React app reads,
   so it appears in everyone's Design PM immediately. The project is flagged with
   `source: "outlook"`.

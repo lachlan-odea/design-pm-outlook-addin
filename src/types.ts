@@ -30,7 +30,7 @@ export type Project = {
   owner: string;
   client: string;
   brand: string;
-  productArea: string;
+  contentType: string;
   briefUrl: string;
   dueDate: string;
   priority: Priority;
@@ -61,7 +61,7 @@ export const BRANDS = [
   "e2open",
 ] as const;
 
-export const PRODUCT_AREAS = [
+export const CONTENT_TYPES = [
   "Web",
   "Landing page",
   "Social",

@@ -4,13 +4,14 @@ import { appendProject, fetchWorkspace, MOCK_BIN_ID } from "./jsonbin";
 import { readCurrentEmail, type EmailContext } from "./email";
 import {
   BRANDS,
-  PRODUCT_AREAS,
+  CONTENT_TYPES,
   type Designer,
   type JsonBinConfig,
   type Priority,
   type Project,
   type Workspace,
 } from "./types";
+import { renderLinkified } from "./linkify";
 
 let config: JsonBinConfig = { binId: "", apiKey: "", accessKey: "" };
 let workspace: Workspace | null = null;
@@ -37,6 +38,15 @@ function bindUi() {
     if (email && workspace) fillForm(email, workspace);
   });
   $("#form-submit")!.addEventListener("click", onSubmit);
+  $("#f-overview")!.addEventListener("input", updateOverviewPreview);
+}
+
+function updateOverviewPreview() {
+  const text = getVal("f-overview");
+  const preview = document.getElementById("f-overview-preview");
+  if (!preview) return;
+  renderLinkified(text, preview);
+  preview.classList.toggle("empty", !text.trim());
 }
 
 async function bootForm() {
@@ -55,7 +65,7 @@ async function bootForm() {
 function fillForm(ctx: EmailContext, ws: Workspace) {
   populateAssignees(ws.designers);
   populateBrands();
-  populateProductAreas();
+  populateContentTypes();
 
   setVal("f-title", ctx.subject || "Untitled brief");
   setVal(
@@ -81,6 +91,7 @@ function fillForm(ctx: EmailContext, ws: Workspace) {
     if (match) meId = match.id;
   }
   setVal("f-assignee", meId);
+  updateOverviewPreview();
 
   setBanner(null);
 }
@@ -99,15 +110,15 @@ function populateBrands() {
   BRANDS.forEach((b) => sel.appendChild(option(b, b)));
 }
 
-function populateProductAreas() {
+function populateContentTypes() {
   const sel = el<HTMLSelectElement>("f-area");
   sel.innerHTML = "";
   sel.appendChild(option("", "— select —"));
-  PRODUCT_AREAS.forEach((p) => sel.appendChild(option(p, p)));
+  CONTENT_TYPES.forEach((p) => sel.appendChild(option(p, p)));
   sel.appendChild(option("__other__", "Other…"));
   sel.addEventListener("change", () => {
     if (sel.value !== "__other__") return;
-    const custom = prompt("Product area:");
+    const custom = prompt("Content type:");
     if (custom) {
       const opt = option(custom, custom);
       sel.insertBefore(opt, sel.querySelector('option[value="__other__"]'));
@@ -175,7 +186,7 @@ async function onSubmit() {
     owner: "",
     client: getVal("f-client").trim(),
     brand: getVal("f-brand").trim(),
-    productArea: getVal("f-area") === "__other__" ? "" : getVal("f-area"),
+    contentType: getVal("f-area") === "__other__" ? "" : getVal("f-area"),
     briefUrl: getVal("f-brief").trim(),
     dueDate: getVal("f-due"),
     priority: getVal("f-priority") as Priority,

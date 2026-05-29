@@ -122,6 +122,44 @@ body {
   min-height: 70px;
 }
 
+.overview-preview {
+  margin-top: 6px;
+  padding: 8px 10px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  color: var(--text);
+  min-height: 18px;
+}
+.overview-preview.empty {
+  display: none;
+}
+.overview-preview a {
+  color: var(--primary);
+  text-decoration: none;
+  word-break: break-word;
+}
+.overview-preview a:hover {
+  text-decoration: underline;
+}
+.field .hint {
+  font-size: 11px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.field .hint code {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0 4px;
+  font-size: 11px;
+}
+
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

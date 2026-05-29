@@ -52,6 +52,8 @@
         <label class="field">
           <span>Overview</span>
           <textarea id="f-overview" rows="4"></textarea>
+          <div id="f-overview-preview" class="overview-preview empty" aria-live="polite"></div>
+          <span class="hint">Paste URLs or use <code>[label](url)</code> — they'll be clickable in Design PM.</span>
         </label>
         <div class="grid">
           <label class="field">
@@ -84,7 +86,7 @@
             <select id="f-brand"></select>
           </label>
           <label class="field">
-            <span>Product area</span>
+            <span>Content type</span>
             <select id="f-area"></select>
           </label>
           <label class="field span-2">
